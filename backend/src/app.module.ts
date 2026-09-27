@@ -8,6 +8,7 @@ import { ConfigModule } from './config/config.module';
 import { loadConfig } from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { Pet } from './pet/pet.entity';
+import { PetModule } from './pet/pet.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { WalkState } from './schedule/walk-state.entity';
 import { SeedService } from './seed/seed.service';
@@ -34,6 +35,7 @@ const config = loadConfig();
     WalkersModule,
     ScheduleModule,
     WeightsModule,
+    PetModule,
   ],
   providers: [SeedService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
