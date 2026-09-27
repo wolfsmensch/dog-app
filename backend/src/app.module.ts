@@ -8,9 +8,11 @@ import { ConfigModule } from './config/config.module';
 import { loadConfig } from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { Pet } from './pet/pet.entity';
+import { ScheduleModule } from './schedule/schedule.module';
 import { WalkState } from './schedule/walk-state.entity';
 import { SeedService } from './seed/seed.service';
 import { Walker } from './walkers/walker.entity';
+import { WalkersModule } from './walkers/walkers.module';
 import { Weight } from './weights/weight.entity';
 
 const config = loadConfig();
@@ -28,6 +30,8 @@ const config = loadConfig();
     TypeOrmModule.forFeature([Walker, WalkState, Weight, Pet]),
     HealthModule,
     AuthModule,
+    WalkersModule,
+    ScheduleModule,
   ],
   providers: [SeedService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
