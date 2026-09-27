@@ -1,1 +1,11 @@
 design/
+.env
+*.db
+*.sqlite*
+*.sqlite-journal
+uploads/
+dist/
+node_modules/
+coverage/
+.nest/
+vite.config.ts.timestamp-*
