@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
-import { APP_CONFIG, loadConfig } from './config/configuration';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { ConfigModule } from './config/config.module';
+import { loadConfig } from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { Pet } from './pet/pet.entity';
 import { WalkState } from './schedule/walk-state.entity';
@@ -13,6 +17,7 @@ const config = loadConfig();
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: join(config.dataDir, 'app.sqlite'),
@@ -22,7 +27,8 @@ const config = loadConfig();
     }),
     TypeOrmModule.forFeature([Walker, WalkState, Weight, Pet]),
     HealthModule,
+    AuthModule,
   ],
-  providers: [{ provide: APP_CONFIG, useValue: config }, SeedService],
+  providers: [SeedService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
 export class AppModule {}
