@@ -1,9 +1,9 @@
 # Design analysis (Claude Design prototype)
 
-Source: `design/Пульник - главный экран.dc.html` (single file; `support.js`,
-`image-slot.js`, `_ds/` are prototype runtime, not app code). The file is a
-visual reference only — do not copy its HTML/CSS/JS into the app. Real
-names/photo in it (`Пульник`, two walker names) must never enter git.
+Source: the single `*.dc.html` file inside `design/` (git-ignored; list the
+directory locally to see its exact name). It is a visual reference only — do
+not copy its HTML/CSS/JS into the app. Real names/photo in it must never
+enter git.
 
 ## Global frame (390×844 mobile)
 
