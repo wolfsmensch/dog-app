@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../api/client';
+import { QueuedError, api } from '../api/client';
 import { useApp } from '../app-state';
 import { todayLocal } from '../lib/dates';
 import { parseWeight, sanitizeWeightInput } from '../lib/weightInput';
@@ -24,6 +24,11 @@ export function WeightSheet({ onClose }: { onClose: () => void }): React.JSX.Ele
       await refreshWeights();
       onClose();
     } catch (e) {
+      if (e instanceof QueuedError) {
+        // Queued for sync — the pending bar informs the user.
+        onClose();
+        return;
+      }
       setError(e instanceof Error ? e.message : 'Не удалось сохранить');
     } finally {
       setSaving(false);

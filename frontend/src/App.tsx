@@ -12,13 +12,23 @@ import { WeightTab } from './components/WeightTab';
 import './styles.css';
 
 function Shell(): React.JSX.Element {
-  const { authed, tab, online, error } = useApp();
+  const { authed, tab, online, error, pending, flushNow } = useApp();
   const [walkersOpen, setWalkersOpen] = useState(false);
   const [weightOpen, setWeightOpen] = useState(false);
 
   return (
     <div className="phone">
       {!online && <div className="offline-bar">Нет соединения — показаны последние данные</div>}
+      {online && pending > 0 && (
+        <button
+          type="button"
+          className="offline-bar"
+          style={{ cursor: 'pointer', border: 'none', width: '100%', fontFamily: 'inherit' }}
+          onClick={() => void flushNow()}
+        >
+          Ожидает отправки: {pending} — нажмите для синхронизации
+        </button>
+      )}
       <Header />
       <main className="main">
         {error && <div className="error-bar">{error}</div>}

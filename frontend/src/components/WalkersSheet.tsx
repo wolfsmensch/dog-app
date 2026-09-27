@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../api/client';
+import { QueuedError, api } from '../api/client';
 import { useApp } from '../app-state';
 import { WALKER_PALETTE } from '../lib/queue';
 
@@ -21,7 +21,11 @@ export function WalkersSheet({ onClose }: { onClose: () => void }): React.JSX.El
       await fn();
       await refreshWalk();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Не удалось выполнить действие');
+      // QueuedError means the change is stored in the outbox;
+      // the pending bar informs the user, no error shown.
+      if (!(e instanceof QueuedError)) {
+        setError(e instanceof Error ? e.message : 'Не удалось выполнить действие');
+      }
     } finally {
       setBusy(false);
     }

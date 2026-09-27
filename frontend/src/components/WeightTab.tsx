@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { api } from '../api/client';
+import { QueuedError, api } from '../api/client';
 import { useApp } from '../app-state';
 import { formatShort, parseDate } from '../lib/dates';
 import { formatWeight } from '../lib/weightInput';
@@ -44,6 +44,9 @@ export function WeightTab({ onOpenWeight }: { onOpenWeight: () => void }): React
     try {
       await api.deleteWeight(id);
       await refreshWeights();
+    } catch (e) {
+      if (e instanceof QueuedError) return;
+      throw e;
     } finally {
       setDeleting(null);
     }

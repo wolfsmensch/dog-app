@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { api, clearToken, getToken, onUnauthorized, setToken } from './api/client';
+import { ApiError, api, clearToken, flushOutbox, getToken, onUnauthorized, setToken } from './api/client';
+import { loadCache, saveCache } from './api/cache';
+import { pendingCount, subscribeOutbox } from './api/outbox';
 import type { DayAssignment, Pet, Tab, Walker, WeightEntry } from './api/types';
 
 interface AppState {
@@ -21,6 +23,8 @@ interface AppState {
   loading: boolean;
   error: string | null;
   online: boolean;
+  pending: number;
+  flushNow: () => Promise<void>;
   refreshAll: () => Promise<void>;
   refreshWalk: () => Promise<void>;
   refreshWeights: () => Promise<void>;
@@ -33,6 +37,11 @@ export function useApp(): AppState {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error('useApp outside provider');
   return ctx;
+}
+
+/** 401 must never fall back to cache (it would mask a bad/expired token). */
+function isAuthError(e: unknown): boolean {
+  return e instanceof ApiError && e.status === 401;
 }
 
 const now = new Date();
@@ -52,13 +61,21 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState(navigator.onLine);
+  const [pending, setPending] = useState(() => pendingCount());
 
   useEffect(() => {
     onUnauthorized(() => setAuthed(false));
   }, []);
 
+  useEffect(() => subscribeOutbox(() => setPending(pendingCount())), []);
+
   useEffect(() => {
-    const on = (): void => setOnline(true);
+    const on = (): void => {
+      setOnline(true);
+      void flushOutbox()
+        .catch(() => undefined)
+        .finally(() => setPending(pendingCount()));
+    };
     const off = (): void => setOnline(false);
     window.addEventListener('online', on);
     window.addEventListener('offline', off);
@@ -81,36 +98,87 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   }, []);
 
   const refreshWalk = useCallback(async () => {
-    const [list, today, w] = await Promise.all([api.walkers(), api.today(), api.week()]);
-    setWalkers(list);
-    setTodayWalkerId(today.walkerId);
-    setTodayDate(today.date);
-    setWeek(w);
+    try {
+      const [list, today, w] = await Promise.all([api.walkers(), api.today(), api.week()]);
+      setWalkers(list);
+      setTodayWalkerId(today.walkerId);
+      setTodayDate(today.date);
+      setWeek(w);
+      saveCache('walk', { list, today, week: w });
+    } catch (e) {
+      if (isAuthError(e)) throw e;
+      const cached = loadCache<{ list: Walker[]; today: { walkerId: number | null; date: string }; week: DayAssignment[] }>('walk');
+      if (cached) {
+        setWalkers(cached.list);
+        setTodayWalkerId(cached.today.walkerId);
+        setTodayDate(cached.today.date);
+        setWeek(cached.week);
+      } else {
+        throw e;
+      }
+    }
   }, []);
 
   const refreshWeights = useCallback(async () => {
-    setWeights(await api.weights());
+    try {
+      const list = await api.weights();
+      setWeights(list);
+      saveCache('weights', list);
+    } catch (e) {
+      if (isAuthError(e)) throw e;
+      const cached = loadCache<WeightEntry[]>('weights');
+      if (cached) setWeights(cached);
+      else throw e;
+    }
   }, []);
 
   const refreshPet = useCallback(async () => {
-    setPet(await api.pet());
+    try {
+      const p = await api.pet();
+      setPet(p);
+      saveCache('pet', p);
+    } catch (e) {
+      if (isAuthError(e)) throw e;
+      const cached = loadCache<Pet>('pet');
+      if (cached) setPet(cached);
+      else throw e;
+    }
   }, []);
 
   const refreshMonth = useCallback(async (year: number, month: number) => {
-    setMonthCells(await api.month(year, month));
+    try {
+      const cells = await api.month(year, month);
+      setMonthCells(cells);
+      saveCache(`month:${year}-${month}`, cells);
+    } catch (e) {
+      if (isAuthError(e)) throw e;
+      const cached = loadCache<DayAssignment[]>(`month:${year}-${month}`);
+      if (cached) setMonthCells(cached);
+      else throw e;
+    }
   }, []);
 
   const refreshAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      await flushOutbox().catch(() => undefined);
+      setPending(pendingCount());
       await Promise.all([refreshWalk(), refreshWeights(), refreshPet()]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка загрузки');
+      if (!isAuthError(e)) {
+        setError(e instanceof Error ? e.message : 'Ошибка загрузки');
+      }
     } finally {
       setLoading(false);
     }
   }, [refreshPet, refreshWalk, refreshWeights]);
+
+  const flushNow = useCallback(async () => {
+    await flushOutbox().catch(() => undefined);
+    setPending(pendingCount());
+    await refreshAll().catch(() => undefined);
+  }, [refreshAll]);
 
   useEffect(() => {
     if (!authed) return;
@@ -141,6 +209,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       loading,
       error,
       online,
+      pending,
+      flushNow,
       refreshAll,
       refreshWalk,
       refreshWeights,
@@ -148,8 +218,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     }),
     [
       authed, authError, login, tab, walkers, todayWalkerId, todayDate, week,
-      monthCells, monthCursor, weights, pet, loading, error, online,
-      refreshAll, refreshWalk, refreshWeights, refreshPet,
+      monthCells, monthCursor, weights, pet, loading, error, online, pending,
+      flushNow, refreshAll, refreshWalk, refreshWeights, refreshPet,
     ],
   );
 

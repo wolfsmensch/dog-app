@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { api } from '../api/client';
+import { QueuedError, api } from '../api/client';
 import { useApp } from '../app-state';
 import { calcAge } from '../lib/age';
 import { todayLocal } from '../lib/dates';
@@ -25,6 +25,13 @@ export function PetTab(): React.JSX.Element {
     try {
       await api.updatePet({ name: next });
       await refreshPet();
+    } catch (e) {
+      // Queued for sync — the pending bar informs the user.
+      if (e instanceof QueuedError) {
+        setName(next);
+        return;
+      }
+      setName(pet?.name ?? '');
     } finally {
       setSaving(false);
     }
