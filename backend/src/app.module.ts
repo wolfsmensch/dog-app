@@ -14,6 +14,7 @@ import { SeedService } from './seed/seed.service';
 import { Walker } from './walkers/walker.entity';
 import { WalkersModule } from './walkers/walkers.module';
 import { Weight } from './weights/weight.entity';
+import { WeightsModule } from './weights/weights.module';
 
 const config = loadConfig();
 
@@ -32,6 +33,7 @@ const config = loadConfig();
     AuthModule,
     WalkersModule,
     ScheduleModule,
+    WeightsModule,
   ],
   providers: [SeedService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
