@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { QueuedError, api } from '../api/client';
+import { PlusIcon, TrashIcon } from './icons';
 import { useApp } from '../app-state';
 import { formatShort, parseDate } from '../lib/dates';
 import { formatWeight } from '../lib/weightInput';
@@ -59,8 +60,8 @@ export function WeightTab({ onOpenWeight }: { onOpenWeight: () => void }): React
           <div className="section-title">История веса</div>
           <div style={{ fontSize: 11.5, color: '#a19786' }}>{range}</div>
         </div>
-        <button type="button" className="icon-btn accent" style={{ width: 44, height: 44, fontSize: 22 }} aria-label="Добавить замер веса" onClick={onOpenWeight}>
-          +
+        <button type="button" className="icon-btn accent" style={{ width: 44, height: 44 }} aria-label="Добавить замер веса" onClick={onOpenWeight}>
+          <PlusIcon size={22} />
         </button>
       </div>
 
@@ -124,7 +125,7 @@ export function WeightTab({ onOpenWeight }: { onOpenWeight: () => void }): React
                   disabled={deleting === e.id}
                   onClick={() => void remove(e.id)}
                 >
-                  🗑
+                  <TrashIcon size={17} />
                 </button>
               </span>
             </div>

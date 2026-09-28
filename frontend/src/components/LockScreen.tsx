@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useApp } from '../app-state';
+import { LockIcon } from './icons';
 
 export function LockScreen(): React.JSX.Element {
   const { login, authError } = useApp();
@@ -23,7 +24,9 @@ export function LockScreen(): React.JSX.Element {
 
   return (
     <div className="lock">
-      <div className="badge">🔒</div>
+      <div className="badge">
+        <LockIcon size={56} />
+      </div>
       <div>
         <h2>Введите пароль</h2>
         <p>Чтобы никто посторонний не зашёл в приложение питомца</p>

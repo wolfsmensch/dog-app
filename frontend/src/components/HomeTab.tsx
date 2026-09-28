@@ -3,6 +3,7 @@ import { calcAge } from '../lib/age';
 import { formatDayMonth, formatFull, todayLocal, weekdayShort } from '../lib/dates';
 import { formatWeight } from '../lib/weightInput';
 import { Legend, walkerById } from './common';
+import { PencilIcon, PlusIcon } from './icons';
 
 interface Props {
   onOpenWalkers: () => void;
@@ -39,7 +40,7 @@ export function HomeTab({ onOpenWalkers, onOpenWeight }: Props): React.JSX.Eleme
           </div>
           <span className="sub">{latest ? `замер ${formatDayMonth(latest.date)}` : 'нет замеров'}</span>
           <button type="button" className="fab" aria-label="Добавить замер веса" onClick={onOpenWeight}>
-            +
+            <PlusIcon size={22} />
           </button>
         </div>
       </div>
@@ -88,7 +89,8 @@ export function HomeTab({ onOpenWalkers, onOpenWeight }: Props): React.JSX.Eleme
       </div>
 
       <button type="button" className="btn-outline" onClick={onOpenWalkers}>
-        ✎ Изменить выгульщиков
+        <PencilIcon size={19} />
+        Изменить выгульщиков
       </button>
     </>
   );

@@ -3,6 +3,7 @@ import { QueuedError, api } from '../api/client';
 import { useApp } from '../app-state';
 import { todayLocal } from '../lib/dates';
 import { parseWeight, sanitizeWeightInput } from '../lib/weightInput';
+import { DateField } from './DateField';
 
 export function WeightSheet({ onClose }: { onClose: () => void }): React.JSX.Element {
   const { refreshWeights } = useApp();
@@ -51,16 +52,7 @@ export function WeightSheet({ onClose }: { onClose: () => void }): React.JSX.Ele
           />
           <span style={{ fontSize: 14, fontWeight: 600, color: '#645c50', paddingRight: 8 }}>кг</span>
         </div>
-        <div className="field">
-          <input
-            type="date"
-            value={date}
-            max={todayLocal()}
-            onChange={(e) => setDate(e.target.value)}
-            aria-label="Дата замера"
-            style={{ fontSize: 16, fontWeight: 600 }}
-          />
-        </div>
+        <DateField value={date} max={todayLocal()} onChange={setDate} label="Дата замера" />
         {error && <div className="error-bar">{error}</div>}
         <button type="button" className="btn-accent" onClick={() => void save()} disabled={saving}>
           {saving ? 'Сохраняем…' : 'Сохранить'}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { QueuedError, api } from '../api/client';
+import { DateField } from './DateField';
 import { useApp } from '../app-state';
 import { calcAge } from '../lib/age';
 import { todayLocal } from '../lib/dates';
@@ -116,15 +117,12 @@ export function PetTab(): React.JSX.Element {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <span className="form-label">Дата рождения</span>
-        <div className="text-input">
-          <input
-            type="date"
-            value={pet?.birthDate ?? ''}
-            onChange={(e) => void saveBirth(e.target.value)}
-            aria-label="Дата рождения"
-            disabled={saving}
-          />
-        </div>
+        <DateField
+          value={pet?.birthDate ?? ''}
+          onChange={(date) => void saveBirth(date)}
+          label="Дата рождения"
+          disabled={saving}
+        />
       </div>
 
       {age && (

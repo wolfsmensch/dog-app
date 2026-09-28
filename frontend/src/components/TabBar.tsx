@@ -1,26 +1,30 @@
 import { useApp } from '../app-state';
 import type { Tab } from '../api/types';
+import { CalendarIcon, ChartIcon, HomeIcon, PawIcon } from './icons';
+import type { JSX } from 'react';
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'home', label: 'Главная', icon: '⌂' },
-  { id: 'month', label: 'Месяц', icon: '▦' },
-  { id: 'weight', label: 'Вес', icon: '📈' },
-  { id: 'pet', label: 'Питомец', icon: '🐾' },
+const TABS: { id: Tab; label: string; Icon: (p: { size?: number; filled?: boolean }) => JSX.Element }[] = [
+  { id: 'home', label: 'Главная', Icon: HomeIcon },
+  { id: 'month', label: 'Месяц', Icon: CalendarIcon },
+  { id: 'weight', label: 'Вес', Icon: ChartIcon },
+  { id: 'pet', label: 'Питомец', Icon: PawIcon },
 ];
 
 export function TabBar(): React.JSX.Element {
   const { tab, setTab } = useApp();
   return (
     <nav className="tabbar">
-      {TABS.map((t) => (
+      {TABS.map(({ id, label, Icon }) => (
         <button
-          key={t.id}
+          key={id}
           type="button"
-          className={tab === t.id ? 'active' : ''}
-          onClick={() => setTab(t.id)}
+          className={tab === id ? 'active' : ''}
+          onClick={() => setTab(id)}
         >
-          <span className="ico">{t.icon}</span>
-          {t.label}
+          <span className="ico">
+            <Icon size={24} filled={tab === id} />
+          </span>
+          {label}
         </button>
       ))}
     </nav>

@@ -1,8 +1,9 @@
 import { useApp } from '../app-state';
 import { monthName, parseDate } from '../lib/dates';
 import { Legend, walkerById } from './common';
+import { ChevronLeftIcon, ChevronRightIcon, PencilIcon } from './icons';
 
-const DOW = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+const DOW = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 
 export function MonthTab({ onOpenWalkers }: { onOpenWalkers: () => void }): React.JSX.Element {
   const { walkers, monthCells, monthCursor, setMonthCursor, todayDate } = useApp();
@@ -29,13 +30,13 @@ export function MonthTab({ onOpenWalkers }: { onOpenWalkers: () => void }): Reac
     <>
       <div className="month-nav">
         <button type="button" aria-label="Предыдущий месяц" onClick={() => shift(-1)}>
-          ‹
+          <ChevronLeftIcon size={20} />
         </button>
         <b>
           {monthName(monthCursor.month)} {monthCursor.year}
         </b>
         <button type="button" aria-label="Следующий месяц" onClick={() => shift(1)}>
-          ›
+          <ChevronRightIcon size={20} />
         </button>
       </div>
 
@@ -57,14 +58,16 @@ export function MonthTab({ onOpenWalkers }: { onOpenWalkers: () => void }): Reac
             const w = walkerById(walkers, d.walkerId);
             const num = parseDate(d.date).d;
             const isToday = d.date === todayDate;
+            const isPast = d.date < todayDate;
+            const bg = w?.color ?? '#dcd3c4';
             return (
               <div key={d.date} className="month-cell">
                 <span
                   style={{
-                    background: w?.color ?? '#dcd3c4',
+                    background: isPast && !isToday ? `color-mix(in srgb, ${bg} 45%, #fbf6ec)` : bg,
+                    color: isPast && !isToday ? '#a19786' : '#201e1d',
                     fontWeight: isToday ? 900 : 600,
                     boxShadow: isToday ? '0 0 0 3px #fbf6ec, 0 0 0 5px rgba(32,30,29,.42)' : 'none',
-                    opacity: d.date < todayDate ? 0.5 : 1,
                   }}
                 >
                   {num}
@@ -75,10 +78,11 @@ export function MonthTab({ onOpenWalkers }: { onOpenWalkers: () => void }): Reac
         </div>
       </div>
 
-      <Legend />
+      <Legend plain />
 
       <button type="button" className="btn-outline" onClick={onOpenWalkers}>
-        ✎ Изменить выгульщиков
+        <PencilIcon size={19} />
+        Изменить выгульщиков
       </button>
     </>
   );

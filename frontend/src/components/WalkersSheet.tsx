@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { QueuedError, api } from '../api/client';
+import { CheckIcon, PencilIcon, PlusIcon, TrashIcon } from './icons';
 import { useApp } from '../app-state';
 import { WALKER_PALETTE } from '../lib/queue';
 
@@ -108,7 +109,7 @@ export function WalkersSheet({ onClose }: { onClose: () => void }): React.JSX.El
                         })
                       }
                     >
-                      ✓
+                      <CheckIcon size={19} />
                     </button>
                   ) : (
                     <button
@@ -118,7 +119,7 @@ export function WalkersSheet({ onClose }: { onClose: () => void }): React.JSX.El
                       disabled={busy}
                       onClick={() => startEdit(w.id, w.name)}
                     >
-                      ✎
+                      <PencilIcon size={17} />
                     </button>
                   )}
                   <button
@@ -135,7 +136,7 @@ export function WalkersSheet({ onClose }: { onClose: () => void }): React.JSX.El
                       }
                     }}
                   >
-                    🗑
+                    <TrashIcon size={17} />
                   </button>
                 </div>
                 {paletteFor === w.id && (
@@ -192,7 +193,7 @@ export function WalkersSheet({ onClose }: { onClose: () => void }): React.JSX.El
             <button
               type="button"
               className="icon-btn accent"
-              style={{ width: 40, height: 40, fontSize: 20 }}
+              style={{ width: 40, height: 40 }}
               aria-label="Добавить выгульщика"
               disabled={busy || !newName.trim()}
               onClick={() =>
@@ -202,7 +203,7 @@ export function WalkersSheet({ onClose }: { onClose: () => void }): React.JSX.El
                 })
               }
             >
-              +
+              <PlusIcon size={20} />
             </button>
           </div>
         ) : (
