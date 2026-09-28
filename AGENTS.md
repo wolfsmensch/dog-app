@@ -1,6 +1,7 @@
 # AGENTS.md — dog-app
 
 > Documentation language: this file and everything under `memory/` is kept in **English**.
+> Exception: `README.md` is kept in **Russian** (user-facing project docs).
 > Communication language: always communicate with the user strictly in **Russian**.
 
 ## Project in brief
@@ -50,6 +51,8 @@ source, and is excluded from git.
   the raw photo; source JPG is NOT in the repo).
 - Public repo hygiene: no real names/photos/passwords in git. Seed data is neutral
   (`Pet`, empty lists). `design/` stays git-ignored.
+- `README.md` is maintained in Russian; all other repo docs (`AGENTS.md`,
+  `memory/`) stay in English.
 
 ## Memory policy (persist context across sessions)
 
