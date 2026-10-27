@@ -32,42 +32,42 @@ docker compose up --build -d
 Открой `http://<сервер>:<WEB_PORT>` и введи пароль один раз — на этом
 устройстве приложение останется авторизованным (токен в `localStorage`).
 
-## Обновление существующей установки (Node 24 / non-root)
+### Автозапуск при загрузке сервера
 
-Backend теперь работает на Node.js 24 LTS (Debian 13) от пользователя `node`
-(UID/GID 1000). Старые вольюмы принадлежат root, поэтому перед первым запуском
-новой версии их нужно один раз перевести на UID 1000. Данные при этом не
-удаляются.
+В `docker-compose.yml` у сервисов уже задано `restart: unless-stopped`, поэтому
+после первого `docker compose up -d` контейнеры автоматически поднимаются при
+старте Docker и сервера. Дополнительные флаги не нужны.
 
-1. Сделай бэкап (см. раздел «Бэкап»).
-2. Собери новые образы и останови API:
-
-   ```bash
-   docker compose build api web
-   docker compose stop api
-   ```
-
-3. Передай владение данными пользователю `node`:
-
-   ```bash
-   docker compose run --rm --no-deps --user root --entrypoint chown \
-     api -R 1000:1000 /data
-   ```
-
-4. Запусти приложение:
-
-   ```bash
-   docker compose up -d
-   ```
-
-Проверка:
+Убедись, что Docker включён в автозапуск:
 
 ```bash
-docker compose exec api id        # uid=1000(node), не root
-docker compose exec api node -v   # v24.x
+sudo systemctl enable --now docker
 ```
 
-Не используй `docker compose down -v`: это удалит базу и фотографии.
+Проверить автозапуск и статус приложения:
+
+```bash
+systemctl is-enabled docker
+docker compose ps
+```
+
+Остановить приложение вручную:
+
+```bash
+docker compose stop
+```
+
+После `stop` контейнеры остаются на месте, но `unless-stopped` больше не
+поднимает их при перезагрузке. Чтобы запустить снова и вернуть автозапуск:
+
+```bash
+docker compose start
+# или
+docker compose up -d
+```
+
+`docker compose down` удаляет контейнеры (вольюмы сохраняются), поэтому после
+него для запуска снова нужен `docker compose up -d`.
 
 ## Структура
 
