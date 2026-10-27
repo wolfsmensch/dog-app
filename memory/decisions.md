@@ -49,8 +49,9 @@ disagrees with this file, this file wins.
 
 10. Frontend: current React (TypeScript). Backend: Nest.js (TypeScript). DB:
     SQLite (WAL mode). No complex data structures.
-11. The app runs via Docker Compose: `docker compose up --build -d` starts the
-    whole app on the real server. HTTPS/SSL is handled by the host nginx, not by
+11. The app runs only via Docker Compose: `docker compose up --build -d` starts
+    the whole app on the real server. Frontend and backend must never be run
+    directly on the host machine. HTTPS/SSL is handled by the host nginx, not by
     this project.
 12. The external `web` service port comes from `.env` (`WEB_PORT`), because port
     80 on the real server is occupied by other services. Operators must be able

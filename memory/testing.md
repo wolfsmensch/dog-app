@@ -5,9 +5,9 @@ build-based plus manual/UI smoke checks.
 
 ## Build
 
-- Backend: `cd backend && npm run build` (`nest build`).
-- Frontend: `cd frontend && npm run build` (`tsc` + `vite build`; also generates
-  the PWA service worker).
+- Builds run only inside Docker: `docker compose build`, or
+  `docker compose up --build -d` to build and start the app.
+- Never run frontend or backend build/dev scripts directly on the host machine.
 - Run `git diff --check` before committing.
 
 ## Docker smoke test

@@ -74,17 +74,12 @@ docker run --rm -v dog-app_uploads-data:/data -v "$PWD:/out" \
   alpine tar czf /out/backup-uploads.tgz -C /data .
 ```
 
-## Локальная разработка (без Docker)
+## Разработка через Docker
 
-Backend:
-
-```bash
-cd backend && npm install
-APP_PASSWORD=dev JWT_SECRET=devsecret DATA_DIR=./data npm run start:dev
-```
-
-Frontend (запросы `/api` и `/uploads` проксируются на `localhost:3000`):
+Приложение запускается только в Docker-контейнерах. Frontend и backend напрямую
+на host-машине не запускаются. После изменений пересоберите контейнеры:
 
 ```bash
-cd frontend && npm install && npm run dev
+docker compose up --build -d
+docker compose logs -f web api
 ```

@@ -50,6 +50,8 @@ is a visual reference only, not implementation source, and is excluded from git.
   offline mutations go into an outbox queue and sync when online.
 - External `web` service port comes from `.env` (`WEB_PORT`), because port 80 on the
   real server is occupied. Never hardcode the public port.
+- Frontend and backend run only as Docker containers via Docker Compose. Never run
+  either of them directly on the host machine.
 - PWA icons: `frontend/public/icons/icon-192.png` and `icon-512.png` (generated from
   the raw photo; source JPG is NOT in the repo).
 - Public repo hygiene: no real names/photos/passwords in git. Seed data is neutral
