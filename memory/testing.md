@@ -41,6 +41,32 @@ and desktop (1200px) widths.
   `16px`/`600` style.
 - Auth: obtain a token with `POST /api/auth/login` using `APP_PASSWORD`; never
   print the password or token to logs. Remove temporary token files afterwards.
+  For Playwright, a token can be written to a temporary file inside the `web`
+  container (for example `/usr/share/nginx/html/.verify-token`), read from the
+  browser to set `localStorage.auth_token`, and then deleted with
+  `docker compose exec -T web rm -f /usr/share/nginx/html/.verify-token`.
+
+## Visual regression (style refactors)
+
+Before changing shared styles, capture a baseline with Playwright from the
+current build, then repeat the same capture after the change under identical
+conditions.
+
+- Cover 390/768/1200 px and every screen/state: lock, lock error, home, month
+  (current/previous/next), weight, pet, weight create/edit/error/focus states,
+  walkers sheet, color palette, rename mode, hover states, and the offline bar.
+- Save full-page and key-element screenshots outside the repo (for example under
+  `/tmp/`).
+- Keep the browser, viewport, device scale factor, database state, timezone, and
+  auth token identical between runs.
+- Before each run unregister the service worker and delete Cache Storage;
+  otherwise `autoUpdate` may keep serving the old CSS. Wait for network idle and
+  `document.fonts.ready`, reset hover/scroll, hide the caret, and disable
+  animations.
+- Compare screenshots pixel-by-pixel: the result must be 0 differing pixels.
+  Also compare bounding boxes and computed styles for every visible element; any
+  difference is a regression. Do not use tolerances.
+- Delete temporary screenshots, token files, and baseline data afterwards.
 
 ## Test data
 

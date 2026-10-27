@@ -147,9 +147,11 @@ frontend/
   public/icons/        # icon-192.png, icon-512.png
 ```
 
-All styles are authored in SCSS and compiled to CSS during the Vite build. No
-hand-written `.css` files are kept in the frontend source; inline React `style`
-props remain allowed.
+All styles are authored in SCSS and compiled to CSS during the Vite build. The
+`sass` package is a frontend devDependency; `styles.scss` loads the font partial
+with `@use './styles/fonts'`, and `index.html` has no separate font stylesheet
+link. No hand-written `.css` files are kept in the frontend source; inline React
+`style` props remain allowed.
 
 UI layout: no simulated phone frame. The app content is a centered column capped
 at 576px; wider screens keep the same `--bg` color (`#f5ead8`) on the sides as the
