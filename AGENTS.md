@@ -74,6 +74,12 @@ is a visual reference only, not implementation source, and is excluded from git.
 - Use a concise commit message that matches the repo style.
 - Push only when the user explicitly asks for a push.
 
+## Reports
+
+- When the user asks for a report as a file, place it in the `reports/`
+  directory (for example `reports/E2E_RESULTS.md`). `reports/` is git-ignored and
+  must never be committed.
+
 ## Memory policy (persist context across sessions)
 
 If there is information that must survive across sessions:
