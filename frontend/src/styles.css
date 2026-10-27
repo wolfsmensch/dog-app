@@ -1,5 +1,4 @@
 :root {
-  --bg-outer: #efe6d6;
   --bg: #f5ead8;
   --card: #fbf6ec;
   --ink: #201e1d;
@@ -22,7 +21,7 @@ body {
 }
 
 body {
-  background: var(--bg-outer);
+  background: var(--bg);
   color: var(--ink);
   font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -34,24 +33,23 @@ body {
   justify-content: center;
 }
 
-.phone {
+.app {
   width: 100%;
-  max-width: 430px;
   min-height: 100vh;
-  background: var(--bg);
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
-@media (min-width: 500px) {
-  .phone {
-    margin: 24px 0;
-    min-height: calc(100vh - 48px);
-    border-radius: 28px;
-    overflow: hidden;
-    box-shadow: 0 24px 60px rgba(46, 43, 37, 0.35);
-  }
+.app-content {
+  width: 100%;
+  max-width: 576px;
+  min-height: 0;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
 }
 
 .topbar {
@@ -347,12 +345,19 @@ body {
 
 .tabbar {
   flex: none;
+  width: 100%;
+  background: var(--card);
+  border-top: 1px solid rgba(32, 30, 29, 0.08);
+}
+
+.tabbar-inner {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 3px;
+  width: 100%;
+  max-width: 576px;
+  margin: 0 auto;
   padding: 10px 12px 24px;
-  background: var(--card);
-  border-top: 1px solid rgba(32, 30, 29, 0.08);
 }
 
 .tabbar button {
@@ -382,11 +387,17 @@ body {
   justify-content: center;
   height: 24px;
   line-height: 1;
+  color: var(--muted);
 }
 
 .lock {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 576px;
   z-index: 20;
   background: var(--bg);
   display: flex;
@@ -450,7 +461,12 @@ body {
 
 .sheet-backdrop {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 576px;
   background: rgba(32, 30, 29, 0.42);
   display: flex;
   align-items: flex-end;

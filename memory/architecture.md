@@ -141,6 +141,13 @@ frontend/
   public/icons/        # icon-192.png, icon-512.png
 ```
 
+UI layout: no simulated phone frame. The app content is a centered column capped
+at 576px; wider screens keep the same `--bg` color (`#f5ead8`) on the sides as the
+content column. The bottom `.tabbar` spans the full viewport, while its button grid
+lives in an inner container capped at 576px. Tab-bar icons are always the outline
+variant in the muted color, whether the tab is active or not; the active tab is
+indicated by the chip background and label color only.
+
 PWA (`vite-plugin-pwa`, `generateSW`, `registerType: 'autoUpdate'`):
 
 - `manifest`: name/short_name/description, `theme_color`, icons 192/512,

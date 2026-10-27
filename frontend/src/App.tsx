@@ -17,29 +17,31 @@ function Shell(): React.JSX.Element {
   const [weightOpen, setWeightOpen] = useState(false);
 
   return (
-    <div className="phone">
-      {!online && <div className="offline-bar">Нет соединения — показаны последние данные</div>}
-      {online && pending > 0 && (
-        <button
-          type="button"
-          className="offline-bar"
-          style={{ cursor: 'pointer', border: 'none', width: '100%', fontFamily: 'inherit' }}
-          onClick={() => void flushNow()}
-        >
-          Ожидает отправки: {pending} — нажмите для синхронизации
-        </button>
-      )}
-      <Header />
-      <main className="main">
-        {error && <div className="error-bar">{error}</div>}
-        {tab === 'home' && (
-          <HomeTab onOpenWalkers={() => setWalkersOpen(true)} onOpenWeight={() => setWeightOpen(true)} />
+    <div className="app">
+      <div className="app-content">
+        {!online && <div className="offline-bar">Нет соединения — показаны последние данные</div>}
+        {online && pending > 0 && (
+          <button
+            type="button"
+            className="offline-bar"
+            style={{ cursor: 'pointer', border: 'none', width: '100%', fontFamily: 'inherit' }}
+            onClick={() => void flushNow()}
+          >
+            Ожидает отправки: {pending} — нажмите для синхронизации
+          </button>
         )}
-        {tab === 'month' && <MonthTab onOpenWalkers={() => setWalkersOpen(true)} />}
-        {tab === 'weight' && <WeightTab onOpenWeight={() => setWeightOpen(true)} />}
-        {tab === 'pet' && <PetTab />}
-      </main>
-      <TabBar />
+        <Header />
+        <main className="main">
+          {error && <div className="error-bar">{error}</div>}
+          {tab === 'home' && (
+            <HomeTab onOpenWalkers={() => setWalkersOpen(true)} onOpenWeight={() => setWeightOpen(true)} />
+          )}
+          {tab === 'month' && <MonthTab onOpenWalkers={() => setWalkersOpen(true)} />}
+          {tab === 'weight' && <WeightTab onOpenWeight={() => setWeightOpen(true)} />}
+          {tab === 'pet' && <PetTab />}
+        </main>
+      </div>
+      {authed && <TabBar />}
       {walkersOpen && <WalkersSheet onClose={() => setWalkersOpen(false)} />}
       {weightOpen && <WeightSheet onClose={() => setWeightOpen(false)} />}
       {!authed && <LockScreen />}
