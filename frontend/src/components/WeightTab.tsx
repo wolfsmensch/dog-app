@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
-import { QueuedError, api } from '../api/client';
-import { PlusIcon, TrashIcon } from './icons';
+import { useMemo } from 'react';
+import type { WeightEntry } from '../api/types';
+import { PlusIcon } from './icons';
 import { useApp } from '../app-state';
 import { formatShort, parseDate } from '../lib/dates';
 import { formatWeight } from '../lib/weightInput';
@@ -9,9 +9,13 @@ const W = 302;
 const H = 128;
 const PX = 6;
 
-export function WeightTab({ onOpenWeight }: { onOpenWeight: () => void }): React.JSX.Element {
-  const { weights, refreshWeights } = useApp();
-  const [deleting, setDeleting] = useState<number | null>(null);
+interface Props {
+  onOpenWeight: () => void;
+  onEditWeight: (entry: WeightEntry) => void;
+}
+
+export function WeightTab({ onOpenWeight, onEditWeight }: Props): React.JSX.Element {
+  const { weights } = useApp();
 
   const asc = useMemo(() => [...weights].reverse(), [weights]);
 
@@ -38,20 +42,6 @@ export function WeightTab({ onOpenWeight }: { onOpenWeight: () => void }): React
     weights.length > 0
       ? `${formatShort(asc[0]?.date ?? '')} — ${formatShort(weights[0].date)}`
       : '';
-
-  async function remove(id: number): Promise<void> {
-    if (!window.confirm('Удалить этот замер?')) return;
-    setDeleting(id);
-    try {
-      await api.deleteWeight(id);
-      await refreshWeights();
-    } catch (e) {
-      if (e instanceof QueuedError) return;
-      throw e;
-    } finally {
-      setDeleting(null);
-    }
-  }
 
   return (
     <>
@@ -104,31 +94,28 @@ export function WeightTab({ onOpenWeight }: { onOpenWeight: () => void }): React
           const cls = diff === null ? 'flat' : diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
           const label =
             diff === null
-              ? 'первый замер'
+              ? ''
               : diff === 0
                 ? 'без изменений'
                 : `${diff > 0 ? '+' : '−'}${formatWeight(Math.abs(diff))} кг`;
           return (
-            <div key={e.id} className="weight-row">
+            <button
+              key={e.id}
+              type="button"
+              className="weight-row"
+              aria-label={`Изменить замер ${formatShort(e.date)}`}
+              onClick={() => onEditWeight(e)}
+            >
               <span>
                 <span className="d">{formatShort(e.date)}</span>
                 <br />
                 <span className="y">{parseDate(e.date).y}</span>
               </span>
               <span className="kg">{formatWeight(e.kg)}</span>
-              <span style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'flex-end' }}>
-                <span className={`delta ${cls}`}>{label}</span>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  aria-label="Удалить замер"
-                  disabled={deleting === e.id}
-                  onClick={() => void remove(e.id)}
-                >
-                  <TrashIcon size={17} />
-                </button>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 78 }}>
+                {diff !== null && <span className={`delta ${cls}`}>{label}</span>}
               </span>
-            </div>
+            </button>
           );
         })}
         {weights.length === 0 && <div className="stub">Пока нет замеров — добавьте первый</div>}

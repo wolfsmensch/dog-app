@@ -47,10 +47,11 @@ and edit button as Home.
 
 `История веса` title + range + `+` button; `Динамика` card (min/max + SVG
 polyline/area chart with dots and date labels); entry rows
-(`Дата | Вес | Изменение`) with delta badges (gain `#ffe1d0`, loss `#e1eecc`,
-first measurement plain). Prototype always writes to "today" and overwrites a
-same-day record; per confirmed decisions the real sheet adds a date picker
-(default today) and deletion of old records.
+(`Дата | Вес | Изменение`) with delta badges (gain `#ffe1d0`, loss `#e1eecc`).
+The oldest entry has no badge; the former "first measurement" label is removed.
+Prototype always writes to "today" and overwrites a same-day record; per confirmed
+decisions the real sheet adds a date picker (default today), row editing, and
+deletion from the edit sheet.
 
 ### 5. Pet (`tab=pet`)
 
@@ -63,7 +64,9 @@ header title); `Дата рождения` (`type=date`); accent `Сейчас �
 ### Weight sheet
 
 Grab handle, title, numeric input (`inputMode="decimal"` + `кг`), date caption,
-accent `Сохранить`. Closes on backdrop click; inner clicks stop propagation.
+accent `Сохранить`. Closes on backdrop click; inner clicks stop propagation. In
+edit mode the title changes, fields are prefilled, and a red `Удалить замер`
+button appears below Save; create mode is unchanged.
 
 ### Walkers sheet
 

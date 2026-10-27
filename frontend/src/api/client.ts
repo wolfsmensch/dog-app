@@ -133,6 +133,12 @@ export const api = {
       request<WeightEntry>('/api/weights', { method: 'POST', body: JSON.stringify(payload) }),
     );
   },
+  updateWeight(id: number, kg: number, date: string): Promise<WeightEntry> {
+    const payload = { id, kg, date };
+    return mutate('updateWeight', payload, () =>
+      request<WeightEntry>(`/api/weights/${id}`, { method: 'PATCH', body: JSON.stringify({ kg, date }) }),
+    );
+  },
   deleteWeight(id: number): Promise<void> {
     return mutate('deleteWeight', { id }, () =>
       request<void>(`/api/weights/${id}`, { method: 'DELETE' }),
@@ -162,6 +168,13 @@ export const api = {
 registerExecutor('upsertWeight', (e) =>
   request<WeightEntry>('/api/weights', { method: 'POST', body: JSON.stringify(e.payload) }),
 );
+registerExecutor('updateWeight', (e) => {
+  const { id, kg, date } = e.payload as { id: number; kg: number; date: string };
+  return request<WeightEntry>(`/api/weights/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ kg, date }),
+  });
+});
 registerExecutor('deleteWeight', (e) =>
   request<void>(`/api/weights/${(e.payload as { id: number }).id}`, { method: 'DELETE' }),
 );

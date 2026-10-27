@@ -29,9 +29,14 @@ disagrees with this file, this file wins.
 7. Decimal separator is a dot only. The weight input accepts digits and a single
    dot only; commas are rejected (or auto-replaced with a dot plus a hint).
    One decimal place, range 1–150 kg.
-8. One record per date (upsert by date). Old records can be backdated via a date
-   picker and deleted. This extends the design prototype, which only had
-   "today + overwrite".
+8. One record per date (upsert by date). New entries default to today; existing
+   entries are edited by tapping their row, which opens the same sheet with the
+   current weight and date prefilled. The edit sheet has a red delete button
+   below Save; the create sheet has no delete button. Moving an entry to a date
+   that already has another entry is rejected (409, "На эту дату уже есть
+   замер"). The oldest entry shows no delta badge — the former "first
+   measurement" label is removed. This extends the design prototype, which only
+   had "today + overwrite".
 
 ## Photo and offline
 
@@ -54,8 +59,10 @@ disagrees with this file, this file wins.
 13. PWA icons are generated PNGs in `frontend/public/icons/` (`icon-192.png`,
     `icon-512.png`). The raw source photo (`~/downloads/icon.jpg`) is NOT
     committed to the repo.
+14. The document title follows the pet name once it is known and falls back to
+    `Питомец` before that (including the initial page load).
 
 ## Documentation
 
-14. `AGENTS.md` and all `memory/*.md` files are kept in English. Communication
+15. `AGENTS.md` and all `memory/*.md` files are kept in English. Communication
     with the user is strictly in Russian.

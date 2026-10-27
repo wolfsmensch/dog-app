@@ -311,6 +311,23 @@ body {
   filter: brightness(1.06);
 }
 
+.btn-danger {
+  border: none;
+  border-radius: 999px;
+  background: var(--danger);
+  color: var(--bg);
+  font-size: 15.5px;
+  font-weight: 700;
+  padding: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.06);
+}
+
 .btn-dark {
   border: none;
   border-radius: 999px;
@@ -656,14 +673,24 @@ body {
 }
 
 .weight-row {
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 10px;
   background: var(--card);
+  border: none;
   border-radius: 22px;
   padding: 13px 16px;
   box-shadow: 0 1px 2px rgba(46, 43, 37, 0.08);
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.weight-row:hover {
+  background: #f8f1e6;
 }
 
 .weight-row .d {

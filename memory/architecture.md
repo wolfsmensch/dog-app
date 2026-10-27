@@ -108,6 +108,7 @@ GET    /api/schedule/month?year=&month=      -> [{ date, walkerId }]
 
 GET    /api/weights?from=&to=     -> [{ id, date, kg }] desc
 POST   /api/weights               { date = today, kg } -> upsert by date
+PATCH  /api/weights/:id           { date, kg } -> edit; 409 if date is taken
 DELETE /api/weights/:id
 
 GET    /api/pet                   -> { name, birthDate, photoUrl }
@@ -117,7 +118,10 @@ DELETE /api/pet/photo
 ```
 
 Weight validation (both sides): `date` is `YYYY-MM-DD`, not further than tomorrow;
-`kg` is a number with max 1 decimal place, 1–150, rounded server-side.
+`kg` is a number with max 1 decimal place, 1–150, rounded server-side. Editing an
+existing entry keeps the same uniqueness rule; a date collision returns 409 and
+leaves both records untouched. Weight mutations (`upsertWeight`, `updateWeight`,
+`deleteWeight`) are queued in the offline outbox.
 
 ## 3. Frontend (React + TypeScript + Vite PWA)
 
@@ -147,6 +151,10 @@ content column. The bottom `.tabbar` spans the full viewport, while its button g
 lives in an inner container capped at 576px. Tab-bar icons are always the outline
 variant in the muted color, whether the tab is active or not; the active tab is
 indicated by the chip background and label color only.
+
+The document title is the pet name once `GET /api/pet` succeeds (or a cached pet
+is restored), with `Питомец` as the initial/fallback value. In the weight history,
+rows open the shared weight sheet in edit mode; the oldest row has no delta badge.
 
 PWA (`vite-plugin-pwa`, `generateSW`, `registerType: 'autoUpdate'`):
 

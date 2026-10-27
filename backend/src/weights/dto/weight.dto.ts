@@ -12,6 +12,16 @@ export class UpsertWeightDto {
   kg!: number;
 }
 
+export class UpdateWeightDto {
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  date!: string;
+
+  @IsNumber({ maxDecimalPlaces: 1 })
+  @Min(1)
+  @Max(150)
+  kg!: number;
+}
+
 export class WeightListQuery {
   @IsOptional()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)

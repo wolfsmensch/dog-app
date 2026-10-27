@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AppProvider, useApp } from './app-state';
+import type { WeightEntry } from './api/types';
 import { Header } from './components/Header';
 import { HomeTab } from './components/HomeTab';
 import { LockScreen } from './components/LockScreen';
@@ -15,6 +16,22 @@ function Shell(): React.JSX.Element {
   const { authed, tab, online, error, pending, flushNow } = useApp();
   const [walkersOpen, setWalkersOpen] = useState(false);
   const [weightOpen, setWeightOpen] = useState(false);
+  const [weightEdit, setWeightEdit] = useState<WeightEntry | null>(null);
+
+  function openNewWeight(): void {
+    setWeightEdit(null);
+    setWeightOpen(true);
+  }
+
+  function openWeightEdit(entry: WeightEntry): void {
+    setWeightEdit(entry);
+    setWeightOpen(true);
+  }
+
+  function closeWeight(): void {
+    setWeightOpen(false);
+    setWeightEdit(null);
+  }
 
   return (
     <div className="app">
@@ -34,16 +51,16 @@ function Shell(): React.JSX.Element {
         <main className="main">
           {error && <div className="error-bar">{error}</div>}
           {tab === 'home' && (
-            <HomeTab onOpenWalkers={() => setWalkersOpen(true)} onOpenWeight={() => setWeightOpen(true)} />
+            <HomeTab onOpenWalkers={() => setWalkersOpen(true)} onOpenWeight={openNewWeight} />
           )}
           {tab === 'month' && <MonthTab onOpenWalkers={() => setWalkersOpen(true)} />}
-          {tab === 'weight' && <WeightTab onOpenWeight={() => setWeightOpen(true)} />}
+          {tab === 'weight' && <WeightTab onOpenWeight={openNewWeight} onEditWeight={openWeightEdit} />}
           {tab === 'pet' && <PetTab />}
         </main>
       </div>
       {authed && <TabBar />}
       {walkersOpen && <WalkersSheet onClose={() => setWalkersOpen(false)} />}
-      {weightOpen && <WeightSheet onClose={() => setWeightOpen(false)} />}
+      {weightOpen && <WeightSheet entry={weightEdit} onClose={closeWeight} />}
       {!authed && <LockScreen />}
     </div>
   );

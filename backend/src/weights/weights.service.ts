@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { addDays, isDateString, todayLocal } from '../common/dates';
@@ -41,6 +41,26 @@ export class WeightsService {
       return toDto(await this.weights.save(existing));
     }
     return toDto(await this.weights.save(this.weights.create({ date: target, kg: rounded })));
+  }
+
+  async update(id: number, date: string, kg: number): Promise<WeightDto> {
+    const entry = await this.weights.findOneBy({ id });
+    if (!entry) throw new NotFoundException('Weight entry not found');
+    if (!isDateString(date)) {
+      throw new BadRequestException('Invalid date');
+    }
+    if (date > addDays(todayLocal(), 1)) {
+      throw new BadRequestException('Date cannot be in the future');
+    }
+    if (date !== entry.date) {
+      const clash = await this.weights.findOneBy({ date });
+      if (clash) {
+        throw new ConflictException('Weight entry for this date already exists');
+      }
+    }
+    entry.date = date;
+    entry.kg = Math.round(kg * 10) / 10;
+    return toDto(await this.weights.save(entry));
   }
 
   async remove(id: number): Promise<void> {

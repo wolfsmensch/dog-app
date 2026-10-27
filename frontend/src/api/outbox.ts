@@ -6,6 +6,7 @@
 
 export type MutationKind =
   | 'upsertWeight'
+  | 'updateWeight'
   | 'deleteWeight'
   | 'setToday'
   | 'createWalker'
