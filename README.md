@@ -13,7 +13,7 @@
 устанавливается как PWA и работает офлайн (показывает последние
 синхронизированные данные, изменения отправляет при появлении сети).
 
-Стек: React + TypeScript (frontend), Nest.js + TypeScript (backend),
+Стек: React + TypeScript + SCSS (frontend), Nest.js + TypeScript (backend),
 SQLite, Docker Compose. HTTPS настраивается на nginx хоста, а не в проекте.
 
 ## Быстрый запуск (боевой сервер)

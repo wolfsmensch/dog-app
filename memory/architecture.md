@@ -138,12 +138,18 @@ frontend/
     components/        # LockScreen, Header, TabBar,
                        # HomeTab, MonthTab, WeightTab, PetTab,
                        # WeightSheet, WalkersSheet
+    styles.scss        # entry stylesheet, compiled from SCSS by Vite
+    styles/_fonts.scss # Roboto @font-face declarations
     App.tsx            # tab state (no router needed for 4 tabs)
   vite.config.ts       # vite-plugin-pwa
   nginx.conf           # static dist/ + proxy /api -> api:3000
   Dockerfile
   public/icons/        # icon-192.png, icon-512.png
 ```
+
+All styles are authored in SCSS and compiled to CSS during the Vite build. No
+hand-written `.css` files are kept in the frontend source; inline React `style`
+props remain allowed.
 
 UI layout: no simulated phone frame. The app content is a centered column capped
 at 576px; wider screens keep the same `--bg` color (`#f5ead8`) on the sides as the

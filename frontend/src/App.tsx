@@ -10,7 +10,7 @@ import { TabBar } from './components/TabBar';
 import { WalkersSheet } from './components/WalkersSheet';
 import { WeightSheet } from './components/WeightSheet';
 import { WeightTab } from './components/WeightTab';
-import './styles.css';
+import './styles.scss';
 
 function Shell(): React.JSX.Element {
   const { authed, tab, online, error, pending, flushNow } = useApp();
