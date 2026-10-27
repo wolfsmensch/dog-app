@@ -109,3 +109,11 @@ is verified. Code is TypeScript only; no personal data in git at any step.
 - [ ] Smoke test on a clean clone with a custom `WEB_PORT` (e.g. 8081).
 - Verify: fresh machine + edited `.env` -> full app in two containers, no 80-port
   conflict, data survives `docker compose down/up` (volumes kept).
+
+## Post-roadmap maintenance
+
+- [x] Runtime upgraded to Node.js 24 LTS on Debian 13 (`node:24-trixie-slim`);
+  `api` runs as the unprivileged `node` user (UID/GID 1000); existing
+  root-owned volumes migrated with a one-time `chown -R 1000:1000`.
+- [x] Production dependency audit is clean (`npm audit --omit=dev`): `multer`
+  2.5.0 and `body-parser` 2.4.0 are pinned via npm `overrides`.

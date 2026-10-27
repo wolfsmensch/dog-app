@@ -22,6 +22,46 @@ build-based plus manual/UI smoke checks.
 `WEB_PORT` comes from `.env`; it is deployment-specific and must never be
 hardcoded in docs, config, or code.
 
+## Runtime and container checks
+
+- `docker compose exec api node -v` -> `v24.x` (Node.js 24 LTS).
+- `docker compose exec api id` -> `uid=1000(node) gid=1000(node)`; the process
+  must not run as root.
+- `docker compose exec api sh -c 'grep VERSION_ID /etc/os-release'` -> `13`
+  (Debian trixie).
+- `docker compose exec api sh -c 'find /data ! -user 1000 -print'` -> empty;
+  everything in `sqlite-data` / `uploads-data` belongs to UID 1000.
+- Write test as the app user:
+  `docker compose exec api sh -c 'touch /data/.write-test && rm /data/.write-test'`.
+- `docker compose exec api node -e 'require("better-sqlite3")'` loads the native
+  module built for the current Node ABI.
+- `npm audit --omit=dev` inside the built image must report
+  `found 0 vulnerabilities`.
+- Existing root-owned volumes need a one-time
+  `docker compose run --rm --no-deps --user root --entrypoint chown api -R 1000:1000 /data`
+  before the first start; verify ownership afterwards.
+
+## Isolated API regression
+
+Use a throwaway container and volume so real data is untouched:
+
+```bash
+docker run --rm -d --name dog-api-test \
+  -e APP_PASSWORD=test-pass -e JWT_SECRET=test-secret -e DATA_DIR=/data \
+  -v dog-api-test-data:/data -p 127.0.0.1:3100:3000 dog-app-api:latest
+```
+
+Exercise auth (401/200), pet CRUD + photo upload/replace/delete, weights
+(upsert, 409, validation, delete), walkers (max 10, last-walker guard, reorder),
+and schedule week/month. Restart the container to verify persistence, then remove
+it and the volume:
+
+```bash
+docker rm -f dog-api-test && docker volume rm dog-api-test-data
+```
+
+Never print `APP_PASSWORD`, `JWT_SECRET`, or tokens to logs.
+
 ## UI checks
 
 Use headless Playwright/Chrome and check at least mobile (390px), tablet (768px),

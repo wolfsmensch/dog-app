@@ -13,8 +13,10 @@
 устанавливается как PWA и работает офлайн (показывает последние
 синхронизированные данные, изменения отправляет при появлении сети).
 
-Стек: React + TypeScript + SCSS (frontend), Nest.js + TypeScript (backend),
-SQLite, Docker Compose. HTTPS настраивается на nginx хоста, а не в проекте.
+Стек: React + TypeScript + SCSS (frontend), Nest.js + TypeScript на Node.js 24
+LTS (backend, Debian 13), SQLite, Docker Compose. Backend-контейнер работает от
+непривилегированного пользователя `node`. HTTPS настраивается на nginx хоста,
+а не в проекте.
 
 ## Быстрый запуск (боевой сервер)
 
@@ -29,6 +31,43 @@ docker compose up --build -d
 
 Открой `http://<сервер>:<WEB_PORT>` и введи пароль один раз — на этом
 устройстве приложение останется авторизованным (токен в `localStorage`).
+
+## Обновление существующей установки (Node 24 / non-root)
+
+Backend теперь работает на Node.js 24 LTS (Debian 13) от пользователя `node`
+(UID/GID 1000). Старые вольюмы принадлежат root, поэтому перед первым запуском
+новой версии их нужно один раз перевести на UID 1000. Данные при этом не
+удаляются.
+
+1. Сделай бэкап (см. раздел «Бэкап»).
+2. Собери новые образы и останови API:
+
+   ```bash
+   docker compose build api web
+   docker compose stop api
+   ```
+
+3. Передай владение данными пользователю `node`:
+
+   ```bash
+   docker compose run --rm --no-deps --user root --entrypoint chown \
+     api -R 1000:1000 /data
+   ```
+
+4. Запусти приложение:
+
+   ```bash
+   docker compose up -d
+   ```
+
+Проверка:
+
+```bash
+docker compose exec api id        # uid=1000(node), не root
+docker compose exec api node -v   # v24.x
+```
+
+Не используй `docker compose down -v`: это удалит базу и фотографии.
 
 ## Структура
 

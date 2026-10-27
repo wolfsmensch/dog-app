@@ -14,6 +14,11 @@ browser (PWA, mobile-first, installable via desktop icon)
   (public port taken from `.env` as `${WEB_PORT:-8080}:80`).
 - Persistent volumes: `sqlite-data:/data`, `uploads-data:/data/uploads`, so the
   DB and photos survive rebuilds.
+- `api` runs as the unprivileged `node` user (UID/GID 1000) on Node.js 24 LTS /
+  Debian 13 (`node:24-trixie-slim`); `web` uses `nginx:alpine`. The image
+  pre-creates `/data/uploads` owned by `node`, so fresh named volumes inherit
+  that ownership. Existing root-owned volumes must be migrated once:
+  `docker compose run --rm --no-deps --user root --entrypoint chown api -R 1000:1000 /data`.
 
 ## 2. Backend (Nest.js, strict TypeScript)
 
@@ -34,6 +39,8 @@ backend/
 
 Dependencies: `@nestjs/common`, `@nestjs/jwt`, `@nestjs/platform-express`,
 `class-validator`, `class-transformer`, `typeorm` + `better-sqlite3`, `multer`.
+`multer` 2.5.0 and `body-parser` 2.4.0 are pinned via npm `overrides` so the
+production dependency tree stays audit-clean.
 
 ### 2.1. Database schema (SQLite, WAL mode)
 
