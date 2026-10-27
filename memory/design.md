@@ -50,7 +50,7 @@ and edit button as Home.
 `История веса` title + range + `+` button; `Динамика` card (min/max + SVG
 polyline/area chart with dots and date labels); entry rows
 (`Дата | Вес | Изменение`) with delta badges (gain `#ffe1d0`, loss `#e1eecc`).
-The oldest entry has no badge; the former "first measurement" label is removed.
+The oldest entry shows a gray `0 кг` badge; the former "first measurement" label is removed.
 Prototype always writes to "today" and overwrites a same-day record; per confirmed
 decisions the real sheet adds a date picker (default today), row editing, and
 deletion from the edit sheet.

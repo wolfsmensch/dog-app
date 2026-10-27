@@ -32,8 +32,11 @@ and desktop (1200px) widths.
 - Title: `document.title` equals the pet name once loaded, and `Питомец` while
   locked or before the name is known.
 - Weight: the create sheet is unchanged; tapping a row opens a prefilled edit
-  sheet; the red delete button sits below Save; the oldest row has no
-  `первый замер` label; a date collision shows the 409 message.
+  sheet; the red delete button sits below Save; the header shows `Изменение`;
+  the oldest row shows a gray `0 кг` badge; a date collision shows the 409
+  message.
+- Pet: the age banner title is `Возраст`, and the age value uses a single
+  `16px`/`600` style.
 - Auth: obtain a token with `POST /api/auth/login` using `APP_PASSWORD`; never
   print the password or token to logs. Remove temporary token files afterwards.
 

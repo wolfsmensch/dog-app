@@ -86,7 +86,7 @@ export function WeightTab({ onOpenWeight, onEditWeight }: Props): React.JSX.Elem
         <div className="list-head">
           <span>Дата</span>
           <span style={{ textAlign: 'right' }}>Вес</span>
-          <span style={{ textAlign: 'right', minWidth: 78 }}>Изм.</span>
+          <span style={{ textAlign: 'right', minWidth: 78 }}>Изменение</span>
         </div>
         {weights.map((e, i) => {
           const prev = weights[i + 1];
@@ -94,7 +94,7 @@ export function WeightTab({ onOpenWeight, onEditWeight }: Props): React.JSX.Elem
           const cls = diff === null ? 'flat' : diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
           const label =
             diff === null
-              ? ''
+              ? '0 кг'
               : diff === 0
                 ? 'без изменений'
                 : `${diff > 0 ? '+' : '−'}${formatWeight(Math.abs(diff))} кг`;
@@ -113,7 +113,7 @@ export function WeightTab({ onOpenWeight, onEditWeight }: Props): React.JSX.Elem
               </span>
               <span className="kg">{formatWeight(e.kg)}</span>
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 78 }}>
-                {diff !== null && <span className={`delta ${cls}`}>{label}</span>}
+                <span className={`delta ${cls}`}>{label}</span>
               </span>
             </button>
           );

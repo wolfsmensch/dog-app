@@ -34,9 +34,9 @@ disagrees with this file, this file wins.
    current weight and date prefilled. The edit sheet has a red delete button
    below Save; the create sheet has no delete button. Moving an entry to a date
    that already has another entry is rejected (409, "На эту дату уже есть
-   замер"). The oldest entry shows no delta badge — the former "first
-   measurement" label is removed. This extends the design prototype, which only
-   had "today + overwrite".
+   замер"). The oldest entry has nothing to compare with, so it shows a gray
+   `0 кг` delta badge; the former "first measurement" label is removed. This
+   extends the design prototype, which only had "today + overwrite".
 
 ## Photo and offline
 

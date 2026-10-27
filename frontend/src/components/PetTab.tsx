@@ -128,14 +128,10 @@ export function PetTab(): React.JSX.Element {
       {age && (
         <div className="age-banner">
           <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(32,30,29,.62)' }}>
-            Сейчас возраст
+            Возраст
           </span>
-          <span>
-            <b style={{ fontSize: 26, fontWeight: 900 }}>{age.years}</b>{' '}
-            <span style={{ fontSize: 14, fontWeight: 600 }}>{age.yearsWord}</span>{' '}
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(32,30,29,.6)' }}>
-              и {age.months} {age.monthsWord}
-            </span>
+          <span style={{ fontSize: 16, fontWeight: 600 }}>
+            {`${age.years} ${age.yearsWord} и ${age.months} ${age.monthsWord}`}
           </span>
         </div>
       )}

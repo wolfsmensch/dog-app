@@ -154,7 +154,8 @@ indicated by the chip background and label color only.
 
 The document title is the pet name once `GET /api/pet` succeeds (or a cached pet
 is restored), with `Питомец` as the initial/fallback value. In the weight history,
-rows open the shared weight sheet in edit mode; the oldest row has no delta badge.
+rows open the shared weight sheet in edit mode; the oldest row shows a gray
+`0 кг` delta badge.
 
 PWA (`vite-plugin-pwa`, `generateSW`, `registerType: 'autoUpdate'`):
 
