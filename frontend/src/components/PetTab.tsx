@@ -5,6 +5,7 @@ import { useApp } from '../app-state';
 import { calcAge } from '../lib/age';
 import { todayLocal } from '../lib/dates';
 import { downscaleImage } from '../lib/photo';
+import { appVersionLabel } from '../lib/version';
 
 export function PetTab(): React.JSX.Element {
   const { pet, refreshPet } = useApp();
@@ -110,9 +111,6 @@ export function PetTab(): React.JSX.Element {
             disabled={saving}
           />
         </div>
-        <span style={{ fontSize: 11.5, color: '#a19786', paddingLeft: 18 }}>
-          Используется как заголовок приложения
-        </span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -135,6 +133,8 @@ export function PetTab(): React.JSX.Element {
           </span>
         </div>
       )}
+
+      <span className="app-version">{appVersionLabel}</span>
     </>
   );
 }

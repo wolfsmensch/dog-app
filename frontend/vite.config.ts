@@ -1,16 +1,23 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import pkg from './package.json' with { type: 'json' };
+
+const buildId = new Date().toISOString();
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_BUILD_ID__: JSON.stringify(buildId),
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       // Icons live in public/icons/ and are copied to dist as-is.
       manifest: {
-        name: 'Питомец — выгул и вес',
-        short_name: 'Питомец',
+        name: 'Собака',
+        short_name: 'Собака',
         description: 'Очередь выгула, возраст и вес питомца',
         lang: 'ru',
         theme_color: '#f5ead8',
