@@ -141,6 +141,7 @@ frontend/
     hooks/             # useWalkers, useWeights, usePet, useOnline
     lib/queue.ts       # client-side rotation mirror for instant UI
     lib/age.ts         # age calc + Russian pluralization
+    lib/version.ts     # build version label in local time
     lib/weightInput.ts # mask: digits + single dot only
     components/        # LockScreen, Header, TabBar,
                        # HomeTab, MonthTab, WeightTab, PetTab,
@@ -148,6 +149,7 @@ frontend/
     styles.scss        # entry stylesheet, compiled from SCSS by Vite
     styles/_fonts.scss # Roboto @font-face declarations
     App.tsx            # tab state (no router needed for 4 tabs)
+    vite-env.d.ts      # Vite/PWA typings + build version globals
   vite.config.ts       # vite-plugin-pwa
   nginx.conf           # static dist/ + proxy /api -> api:3000
   Dockerfile
@@ -174,12 +176,22 @@ rows open the shared weight sheet in edit mode; the oldest row shows a gray
 
 PWA (`vite-plugin-pwa`, `generateSW`, `registerType: 'autoUpdate'`):
 
-- `manifest`: name/short_name/description, `theme_color`, icons 192/512,
-  `display: 'standalone'`.
-- `workbox.globPatterns: ['**/*.{js,css,html,ico,png,svg}']` — precached app shell.
-- `runtimeCaching`: `NetworkFirst` for `GET /api/*` and `/uploads/*` (offline shows
-  last data + photo); `NetworkOnly` for mutations, which additionally go through
-  the `outbox` queue and show a "pending sync" state.
+- Registration is manual via `virtual:pwa-register`:
+  `registerSW({ immediate: true })` in `main.tsx`. The plugin sets
+  `skipWaiting`/`clientsClaim`, so a new service worker activates and reloads
+  open pages automatically.
+- `manifest`: `name` and `short_name` are `Собака`; description, `theme_color`,
+  icons 192/512, `display: 'standalone'`.
+- `/index.html`, `/sw.js`, and `/manifest.webmanifest` are served with
+  `Cache-Control: no-cache`; hashed `/assets/*` are immutable.
+- `workbox.globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']` — precached
+  app shell.
+- `runtimeCaching`: `NetworkFirst` for `GET /api/(walkers|schedule|weights|pet)`
+  (5 s timeout, last data when offline); `CacheFirst` for `/uploads/*` (30 days).
+  Mutations bypass the SW cache and go through the `outbox` queue.
+- Build version: `<package.json version> · <UTC build time>` is injected at
+  build time via Vite `define` (`__APP_VERSION__`, `__APP_BUILD_ID__`) and shown
+  at the bottom of the Pet tab in the device's local time.
 - Weight sheet: date picker defaulting to today + numeric input
   (`inputMode="decimal"`, mask from `lib/weightInput.ts`, dot only).
 - Pet photo: client-side downscale (~1200px) before upload, then cached by SW.

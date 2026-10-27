@@ -78,13 +78,33 @@ and desktop (1200px) widths.
   the oldest row shows a gray `0 кг` badge; a date collision shows the 409
   message.
 - Pet: the age banner title is `Возраст`, and the age value uses a single
-  `16px`/`600` style.
+  `16px`/`600` style. The "Используется как заголовок приложения" hint is
+  absent. The build version sits at the bottom of the content area, centered,
+  `12px`, translucent, in device-local time.
 - Auth: obtain a token with `POST /api/auth/login` using `APP_PASSWORD`; never
   print the password or token to logs. Remove temporary token files afterwards.
   For Playwright, a token can be written to a temporary file inside the `web`
   container (for example `/usr/share/nginx/html/.verify-token`), read from the
   browser to set `localStorage.auth_token`, and then deleted with
   `docker compose exec -T web rm -f /usr/share/nginx/html/.verify-token`.
+
+## PWA and build version checks
+
+- Both `package.json` files and the root lockfile entries report the expected
+  release version (currently `0.7.0`).
+- The built `index.html` has no `/registerSW.js` script, and `dist/registerSW.js`
+  does not exist; registration goes through `virtual:pwa-register`.
+- `sw.js` contains `skipWaiting()` and `clientsClaim()`, and the bundle includes
+  `workbox-window` auto-reload handling.
+- `manifest.webmanifest` contains `"name":"Собака"` and `"short_name":"Собака"`.
+- With `WEB_PORT` from `.env`, `curl -sI` for `/manifest.webmanifest`,
+  `/index.html`, and `/sw.js` returns
+  `Cache-Control: no-cache, no-store, must-revalidate`.
+- The Pet tab shows `v<package.json version> · YYYY-MM-DD HH:mm` in device-local
+  time, `12px`, centered, translucent.
+- Update smoke test: build and load the app, record the version; rebuild `web`
+  with a new `BUILD_ID`, call `registration.update()` from Playwright, and verify
+  the page reloads automatically and the displayed version changes.
 
 ## Visual regression (style refactors)
 

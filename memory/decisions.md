@@ -73,8 +73,17 @@ disagrees with this file, this file wins.
 17. Runtime dependencies are kept audit-clean (`npm audit --omit=dev` reports
     zero vulnerabilities). `multer` 2.5.0 and `body-parser` 2.4.0 are pinned via
     npm `overrides` until the Nest.js packages bump them.
+18. PWA updates use `virtual:pwa-register` with `registerSW({ immediate: true })`
+    and `registerType: 'autoUpdate'`: a new service worker takes control and
+    reloads open pages. `/manifest.webmanifest` is served with `no-cache`. The
+    running frontend build is shown at the bottom of the Pet tab as
+    `v<package.json version> · <YYYY-MM-DD HH:mm>`; the build timestamp is
+    captured in UTC at Vite build time and rendered in the device's local
+    timezone.
+19. The PWA manifest uses `Собака` for both `name` and `short_name`. The document
+    title still follows the pet name (decision 14).
 
 ## Documentation
 
-18. `AGENTS.md` and all `memory/*.md` files are kept in English. Communication
+20. `AGENTS.md` and all `memory/*.md` files are kept in English. Communication
     with the user is strictly in Russian.
