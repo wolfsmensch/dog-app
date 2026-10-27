@@ -27,10 +27,12 @@ Detailed project description lives in the `memory/` directory:
   truth when docs disagree).
 - `memory/design.md` — analysis of the Claude Design prototype (`design/`, git-ignored):
   screen structure, functions, and how they connect.
+- `memory/testing.md` — build, Docker smoke-test, UI verification, and test-data
+  cleanup workflow.
 
 Always read `memory/decisions.md` first, then `memory/architecture.md` for the task
-at hand. The `design/` directory is a visual reference only, not implementation
-source, and is excluded from git.
+at hand. Use `memory/testing.md` when verifying a change. The `design/` directory
+is a visual reference only, not implementation source, and is excluded from git.
 
 ## Key constraints
 
@@ -41,8 +43,9 @@ source, and is excluded from git.
 - Walk queue = cyclic auto-rotation anchored at "who walks today" (no per-day manual
   assignment). Max 10 walkers (enforced client- and server-side).
 - Weight entries: default date = today; decimal separator is a dot only; input mask
-  allows digits and one dot only; one record per date (upsert); old records can be
-  deleted and backdated (date picker).
+  allows digits and one dot only; one record per date (upsert); tapping a row edits
+  its kg/date, and deletion lives inside that edit sheet. A date collision is
+  rejected (409).
 - Pet photo is uploaded to the backend (`/data/uploads`) and cached by the PWA;
   offline mutations go into an outbox queue and sync when online.
 - External `web` service port comes from `.env` (`WEB_PORT`), because port 80 on the
@@ -53,6 +56,14 @@ source, and is excluded from git.
   (`Pet`, empty lists). `design/` stays git-ignored.
 - `README.md` is maintained in Russian; all other repo docs (`AGENTS.md`,
   `memory/`) stay in English.
+
+## Git workflow
+
+- Commit after every logically complete set of changes, not once at the end of a
+  multi-step plan. Each self-contained fix, feature, or docs update gets its own
+  commit.
+- Use a concise commit message that matches the repo style.
+- Push only when the user explicitly asks for a push.
 
 ## Memory policy (persist context across sessions)
 

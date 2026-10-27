@@ -30,7 +30,9 @@ non-empty string — the real app verifies against the backend instead.
 ### 2. Home (`tab=home`)
 
 1. Two cards: **Age** (`38px/900` years + `род. 14 июня 2023`) and **Weight**
-   (kg + last-measurement date + corner `+` button opening the weight sheet).
+   (kg + last-measurement date + `+` button opening the weight sheet). The `+`
+   button sits fully inside the Weight card at its top-right corner; it must not
+   overlap or protrude past the card edge.
 2. `Сегодня выгуливает` banner: walker name, background = that walker's color,
    weekday/date on the right (hardcoded in the prototype).
 3. `График выгула` card: title + range, 7-day grid (weekday, date, walker color
