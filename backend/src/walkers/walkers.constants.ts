@@ -14,6 +14,8 @@ export const WALKER_PALETTE = [
 
 export const MAX_WALKERS = 10;
 
+export const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
+
 export function isHexColor(value: unknown): value is string {
-  return typeof value === 'string' && /^#[0-9A-Fa-f]{6}$/.test(value);
+  return typeof value === 'string' && HEX_COLOR_RE.test(value);
 }

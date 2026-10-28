@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsHexColor, IsInt, IsOptional, MaxLength, Min, MinLength } from 'class-validator';
+import { IsInt, IsOptional, Matches, MaxLength, Min, MinLength } from 'class-validator';
+import { HEX_COLOR_RE } from '../walkers.constants';
 
 export class UpdateWalkerDto {
   @IsOptional()
@@ -9,7 +10,7 @@ export class UpdateWalkerDto {
   name?: string;
 
   @IsOptional()
-  @IsHexColor()
+  @Matches(HEX_COLOR_RE)
   color?: string;
 
   /** New zero-based position in the queue; other walkers shift accordingly. */
