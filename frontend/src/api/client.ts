@@ -1,6 +1,9 @@
+import { ApiError, QueuedError } from './errors';
 import { enqueue, flushOutbox, registerExecutor } from './outbox';
 import type { MutationKind } from './outbox';
 import type { DayAssignment, Pet, Walker, WeightEntry } from './types';
+
+export { ApiError, QueuedError };
 
 const TOKEN_KEY = 'auth_token';
 
@@ -16,22 +19,7 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.status = status;
-  }
-}
-
 let unauthorizedHandler: (() => void) | null = null;
-
-export class QueuedError extends Error {
-  constructor() {
-    super('Нет соединения — изменение сохранено и отправится позже');
-    this.name = 'QueuedError';
-  }
-}
 
 async function mutate<T>(kind: MutationKind, payload: unknown, fn: () => Promise<T>): Promise<T> {
   if (!navigator.onLine) {

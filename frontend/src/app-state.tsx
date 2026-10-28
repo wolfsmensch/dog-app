@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ApiError, api, clearToken, flushOutbox, getToken, onUnauthorized, setToken } from './api/client';
 import { loadCache, saveCache } from './api/cache';
 import { pendingCount, subscribeOutbox } from './api/outbox';
+import type { DroppedEntry } from './api/outbox';
 import type { DayAssignment, Pet, Tab, Walker, WeightEntry } from './api/types';
 
 interface AppState {
@@ -24,6 +25,8 @@ interface AppState {
   error: string | null;
   online: boolean;
   pending: number;
+  syncNotice: string | null;
+  dismissSyncNotice: () => void;
   flushNow: () => Promise<void>;
   refreshAll: () => Promise<void>;
   refreshWalk: () => Promise<void>;
@@ -44,6 +47,19 @@ function isAuthError(e: unknown): boolean {
   return e instanceof ApiError && e.status === 401;
 }
 
+function reasonForStatus(status: number): string {
+  if (status === 400 || status === 422) return 'некорректные данные';
+  if (status === 403) return 'нет доступа';
+  if (status === 404) return 'запись уже удалена';
+  if (status === 409) return 'конфликт данных';
+  return `ошибка ${status}`;
+}
+
+function syncFailureText(dropped: DroppedEntry[]): string {
+  const reasons = [...new Set(dropped.map((entry) => reasonForStatus(entry.status)))];
+  return `Не удалось применить изменения: ${dropped.length} (${reasons.join(', ')}).`;
+}
+
 const now = new Date();
 
 export function AppProvider({ children }: { children: ReactNode }): React.JSX.Element {
@@ -62,28 +78,14 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   const [error, setError] = useState<string | null>(null);
   const [online, setOnline] = useState(navigator.onLine);
   const [pending, setPending] = useState(() => pendingCount());
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
+  const [walkRevision, setWalkRevision] = useState(0);
 
   useEffect(() => {
     onUnauthorized(() => setAuthed(false));
   }, []);
 
   useEffect(() => subscribeOutbox(() => setPending(pendingCount())), []);
-
-  useEffect(() => {
-    const on = (): void => {
-      setOnline(true);
-      void flushOutbox()
-        .catch(() => undefined)
-        .finally(() => setPending(pendingCount()));
-    };
-    const off = (): void => setOnline(false);
-    window.addEventListener('online', on);
-    window.addEventListener('offline', off);
-    return () => {
-      window.removeEventListener('online', on);
-      window.removeEventListener('offline', off);
-    };
-  }, []);
 
   const login = useCallback(async (password: string) => {
     setAuthError(null);
@@ -105,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       setTodayDate(today.date);
       setWeek(w);
       saveCache('walk', { list, today, week: w });
+      setWalkRevision((v) => v + 1);
     } catch (e) {
       if (isAuthError(e)) throw e;
       const cached = loadCache<{ list: Walker[]; today: { walkerId: number | null; date: string }; week: DayAssignment[] }>('walk');
@@ -162,8 +165,15 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     setLoading(true);
     setError(null);
     try {
-      await flushOutbox().catch(() => undefined);
+      let dropped: DroppedEntry[] = [];
+      try {
+        const result = await flushOutbox();
+        dropped = result.dropped;
+      } catch {
+        // Keep the queue for the next attempt.
+      }
       setPending(pendingCount());
+      setSyncNotice(dropped.length > 0 ? syncFailureText(dropped) : null);
       await Promise.all([refreshWalk(), refreshWeights(), refreshPet()]);
     } catch (e) {
       if (!isAuthError(e)) {
@@ -175,9 +185,23 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   }, [refreshPet, refreshWalk, refreshWeights]);
 
   const flushNow = useCallback(async () => {
-    await flushOutbox().catch(() => undefined);
-    setPending(pendingCount());
-    await refreshAll().catch(() => undefined);
+    await refreshAll();
+  }, [refreshAll]);
+
+  const dismissSyncNotice = useCallback(() => setSyncNotice(null), []);
+
+  useEffect(() => {
+    const on = (): void => {
+      setOnline(true);
+      void refreshAll();
+    };
+    const off = (): void => setOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
   }, [refreshAll]);
 
   useEffect(() => {
@@ -188,7 +212,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   useEffect(() => {
     if (!authed || tab !== 'month') return;
     void refreshMonth(monthCursor.year, monthCursor.month).catch(() => undefined);
-  }, [authed, tab, monthCursor, refreshMonth]);
+  }, [authed, tab, monthCursor, walkRevision, refreshMonth]);
 
   const value = useMemo<AppState>(
     () => ({
@@ -210,6 +234,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       error,
       online,
       pending,
+      syncNotice,
+      dismissSyncNotice,
       flushNow,
       refreshAll,
       refreshWalk,
@@ -219,7 +245,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     [
       authed, authError, login, tab, walkers, todayWalkerId, todayDate, week,
       monthCells, monthCursor, weights, pet, loading, error, online, pending,
-      flushNow, refreshAll, refreshWalk, refreshWeights, refreshPet,
+      syncNotice, dismissSyncNotice, flushNow, refreshAll, refreshWalk,
+      refreshWeights, refreshPet,
     ],
   );
 

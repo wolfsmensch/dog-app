@@ -13,7 +13,7 @@ import { WeightTab } from './components/WeightTab';
 import './styles.scss';
 
 function Shell(): React.JSX.Element {
-  const { authed, tab, online, error, pending, flushNow } = useApp();
+  const { authed, tab, online, error, pending, syncNotice, dismissSyncNotice, flushNow } = useApp();
   const [walkersOpen, setWalkersOpen] = useState(false);
   const [weightOpen, setWeightOpen] = useState(false);
   const [weightEdit, setWeightEdit] = useState<WeightEntry | null>(null);
@@ -50,6 +50,14 @@ function Shell(): React.JSX.Element {
         <Header />
         <main className="main">
           {error && <div className="error-bar">{error}</div>}
+          {syncNotice && (
+            <div className="error-bar sync-bar" role="status">
+              <span>{syncNotice}</span>
+              <button type="button" aria-label="Скрыть уведомление" onClick={dismissSyncNotice}>
+                ×
+              </button>
+            </div>
+          )}
           {tab === 'home' && (
             <HomeTab onOpenWalkers={() => setWalkersOpen(true)} onOpenWeight={openNewWeight} />
           )}

@@ -4,6 +4,8 @@
  * Photo uploads are NOT queued (binary payloads don't fit localStorage well).
  */
 
+import { ApiError } from './errors';
+
 export type MutationKind =
   | 'upsertWeight'
   | 'updateWeight'
@@ -20,6 +22,18 @@ export interface OutboxEntry {
   kind: MutationKind;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
+}
+
+export interface DroppedEntry {
+  id: string;
+  kind: MutationKind;
+  status: number;
+}
+
+export interface FlushResult {
+  done: number;
+  left: number;
+  dropped: DroppedEntry[];
 }
 
 const KEY = 'dogapp:outbox:v1';
@@ -72,13 +86,32 @@ export function subscribeOutbox(fn: () => void): () => void {
   return () => window.removeEventListener(EVENT, fn);
 }
 
-/** Replay queued mutations in FIFO order. Stops at the first failure. */
-export async function flushOutbox(): Promise<{ done: number; left: number }> {
+function isPermanentFailure(e: unknown): e is ApiError {
+  if (!(e instanceof ApiError)) return false;
+  // 401 must keep the queue: the user can log in again and replay it.
+  // 408/429 and 5xx are transient; everything else in 4xx will never succeed.
+  if (e.status === 401 || e.status === 408 || e.status === 429) return false;
+  return e.status >= 400 && e.status < 500;
+}
+
+function isDelete(kind: MutationKind): boolean {
+  return kind === 'deleteWeight' || kind === 'deleteWalker';
+}
+
+/**
+ * Replay queued mutations in FIFO order.
+ *
+ * Permanent 4xx failures are dropped so one bad entry cannot block the rest;
+ * transient/network failures stop the flush and keep the whole queue for later.
+ * A 404 on delete means the desired state is already reached and counts as done.
+ */
+export async function flushOutbox(): Promise<FlushResult> {
   let done = 0;
+  const dropped: DroppedEntry[] = [];
   for (;;) {
     const list = read();
     const next = list[0];
-    if (!next) return { done, left: 0 };
+    if (!next) return { done, left: 0, dropped };
     const exec = executors.get(next.kind);
     if (!exec) {
       write(list.slice(1));
@@ -86,8 +119,17 @@ export async function flushOutbox(): Promise<{ done: number; left: number }> {
     }
     try {
       await exec(next);
-    } catch {
-      return { done, left: list.length };
+    } catch (e) {
+      if (isPermanentFailure(e)) {
+        write(read().filter((entry) => entry.id !== next.id));
+        if (isDelete(next.kind) && e.status === 404) {
+          done += 1;
+        } else {
+          dropped.push({ id: next.id, kind: next.kind, status: e.status });
+        }
+        continue;
+      }
+      return { done, left: list.length, dropped };
     }
     write(read().filter((e) => e.id !== next.id));
     done += 1;
