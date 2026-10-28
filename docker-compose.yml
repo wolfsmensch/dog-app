@@ -4,6 +4,7 @@ services:
     env_file: .env
     environment:
       DATA_DIR: /data
+      TZ: ${APP_TIMEZONE:-UTC}
     volumes:
       - sqlite-data:/data
       - uploads-data:/data/uploads

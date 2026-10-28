@@ -50,6 +50,9 @@ is a visual reference only, not implementation source, and is excluded from git.
   offline mutations go into an outbox queue and sync when online.
 - External `web` service port comes from `.env` (`WEB_PORT`), because port 80 on the
   real server is occupied. Never hardcode the public port.
+- Server-side "today" uses `APP_TIMEZONE` (mapped to `TZ` in the `api`
+  container), default `UTC`, production `Asia/Yekaterinburg`. Never derive
+  dates from the container's implicit UTC clock.
 - Frontend and backend run only as Docker containers via Docker Compose. Never run
   either of them directly on the host machine.
 - Backend runtime: Node 24 LTS on Debian 13 (`node:24-trixie-slim`). The `api`

@@ -12,6 +12,8 @@
 (первый экран). Интерфейс ориентирован на мобильные устройства,
 устанавливается как PWA и работает офлайн (показывает последние
 синхронизированные данные, изменения отправляет при появлении сети).
+Конфликтующие изменения при синхронизации отбрасываются с уведомлением,
+остальные применяются.
 
 Стек: React + TypeScript + SCSS (frontend), Nest.js + TypeScript на Node.js 24
 LTS (backend, Debian 13), SQLite, Docker Compose. Backend-контейнер работает от
@@ -22,7 +24,7 @@ LTS (backend, Debian 13), SQLite, Docker Compose. Backend-контейнер р�
 
 ```bash
 cp .env.example .env
-# Отредактируй .env: задай APP_PASSWORD, JWT_SECRET и WEB_PORT
+# Отредактируй .env: задай APP_PASSWORD, JWT_SECRET, WEB_PORT и APP_TIMEZONE
 # (80-й порт на боевом сервере занят, выбери свободный, например 8081)
 nano .env
 
@@ -91,6 +93,7 @@ docker compose up -d
 | `JWT_SECRET`     | длинная случайная строка для подписи токенов            |
 | `JWT_EXPIRES_IN` | время жизни токена (по умолчанию `365d`, кнопки выхода нет) |
 | `WEB_PORT`       | публичный порт сервиса `web` (например, `8081`)         |
+| `APP_TIMEZONE`   | часовой пояс дома (IANA), например `Asia/Yekaterinburg` |
 
 ## Полезные команды
 
