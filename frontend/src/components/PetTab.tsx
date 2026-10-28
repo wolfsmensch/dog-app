@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { QueuedError, api } from '../api/client';
+import { ApiError, QueuedError, api } from '../api/client';
 import { DateField } from './DateField';
 import { useApp } from '../app-state';
 import { calcAge } from '../lib/age';
@@ -10,6 +10,8 @@ import { appVersionLabel } from '../lib/version';
 export function PetTab(): React.JSX.Element {
   const { pet, refreshPet } = useApp();
   const [name, setName] = useState(pet?.name ?? '');
+  const [birthDraft, setBirthDraft] = useState(pet?.birthDate ?? '');
+  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -17,12 +19,17 @@ export function PetTab(): React.JSX.Element {
     setName(pet?.name ?? '');
   }, [pet?.name]);
 
+  useEffect(() => {
+    setBirthDraft(pet?.birthDate ?? '');
+  }, [pet?.birthDate]);
+
   async function saveName(): Promise<void> {
     const next = name.trim();
     if (!next || next === pet?.name) {
       setName(pet?.name ?? '');
       return;
     }
+    setError(null);
     setSaving(true);
     try {
       await api.updatePet({ name: next });
@@ -34,17 +41,39 @@ export function PetTab(): React.JSX.Element {
         return;
       }
       setName(pet?.name ?? '');
+      setError(e instanceof ApiError ? e.message : 'Не удалось сохранить имя');
     } finally {
       setSaving(false);
     }
   }
 
   async function saveBirth(date: string): Promise<void> {
-    if (!date || date === pet?.birthDate) return;
+    if (!date) return;
+    setError(null);
+    if (date === pet?.birthDate) {
+      setBirthDraft(date);
+      return;
+    }
+    if (date > todayLocal()) {
+      setBirthDraft(pet?.birthDate ?? '');
+      setError('Дата рождения не может быть в будущем');
+      return;
+    }
     setSaving(true);
     try {
       await api.updatePet({ birthDate: date });
       await refreshPet();
+    } catch (e) {
+      if (e instanceof QueuedError) {
+        setBirthDraft(date);
+        return;
+      }
+      setBirthDraft(pet?.birthDate ?? '');
+      if (e instanceof ApiError && e.status === 400) {
+        setError('Дата рождения не может быть в будущем');
+      } else {
+        setError('Не удалось сохранить дату рождения');
+      }
     } finally {
       setSaving(false);
     }
@@ -52,11 +81,26 @@ export function PetTab(): React.JSX.Element {
 
   async function pickPhoto(file: File | undefined): Promise<void> {
     if (!file) return;
+    setError(null);
+    if (!navigator.onLine) {
+      setError('Для загрузки фото нужно подключение к интернету');
+      return;
+    }
     setSaving(true);
     try {
       const small = await downscaleImage(file);
       await api.uploadPhoto(small);
       await refreshPet();
+    } catch (e) {
+      if (e instanceof QueuedError) {
+        setError('Для загрузки фото нужно подключение к интернету');
+      } else if (e instanceof ApiError && e.status === 413) {
+        setError('Файл больше 5 МБ');
+      } else if (e instanceof ApiError && e.status === 400) {
+        setError('Поддерживаются JPEG, PNG и WebP');
+      } else {
+        setError('Не удалось загрузить фото. Проверьте соединение.');
+      }
     } finally {
       setSaving(false);
     }
@@ -116,12 +160,22 @@ export function PetTab(): React.JSX.Element {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <span className="form-label">Дата рождения</span>
         <DateField
-          value={pet?.birthDate ?? ''}
-          onChange={(date) => void saveBirth(date)}
+          value={birthDraft}
+          max={todayLocal()}
+          onChange={(date) => {
+            setBirthDraft(date);
+            void saveBirth(date);
+          }}
           label="Дата рождения"
           disabled={saving}
         />
       </div>
+
+      {error && (
+        <div className="error-bar" role="alert">
+          {error}
+        </div>
+      )}
 
       {age && (
         <div className="age-banner">
