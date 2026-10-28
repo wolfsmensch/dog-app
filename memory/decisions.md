@@ -83,7 +83,24 @@ disagrees with this file, this file wins.
 19. The PWA manifest uses `Собака` for both `name` and `short_name`. The document
     title still follows the pet name (decision 14).
 
+## Dates, sync, and validation
+
+20. Server-side "today" (walk anchor, age, default and future-date checks) uses
+    the household IANA timezone from `APP_TIMEZONE`, passed to the `api`
+    container as `TZ`. The default is `UTC`; the production value is
+    `Asia/Yekaterinburg`. The client defaults new dates to the device-local
+    date, so both sides must use the same zone.
+21. Outbox flush continues after permanent failures (other 4xx, e.g. 400/404/409):
+    the entry is dropped, the rest of the queue is sent, and the UI shows a
+    dismissible notice with the dropped count. Auth/network/5xx failures stop
+    the flush and keep the queue for retry; `404` on a delete is success.
+22. After a successful flush or a return online, the frontend refreshes all
+    cached data. A successful "who walks today" change bumps `walkRevision`,
+    which refetches the month so its colors do not stay stale.
+23. Walker colors are strictly six-digit hex (`#RRGGBB`) on both client and
+    server. Shorthand (`#fff`), names (`red`), and malformed values are rejected.
+
 ## Documentation
 
-20. `AGENTS.md` and all `memory/*.md` files are kept in English. Communication
+24. `AGENTS.md` and all `memory/*.md` files are kept in English. Communication
     with the user is strictly in Russian.

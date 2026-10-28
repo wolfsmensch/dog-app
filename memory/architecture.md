@@ -27,7 +27,7 @@ backend/
   src/
     main.ts            # /api prefix, global ValidationPipe, SQLite WAL
     app.module.ts
-    config/            # env validation (APP_PASSWORD, JWT_SECRET, DATA_DIR)
+    config/            # env validation (APP_PASSWORD, JWT_SECRET, DATA_DIR, TZ)
     auth/              # login, JwtStrategy, JwtAuthGuard (global minus login/health)
     health/            # GET /api/health (unauthenticated, Docker healthcheck)
     walkers/           # entity, DTOs, service, controller
@@ -81,6 +81,9 @@ pet(
 
 - Secrets in backend `.env` (never in git): `APP_PASSWORD`, `JWT_SECRET`,
   `JWT_EXPIRES_IN=365d`, `DATA_DIR=/data`. `.env.example` documents names only.
+- Local dates use `APP_TIMEZONE` (IANA name), injected into the `api` container
+  as `TZ`; it defaults to `UTC` in Compose. `todayLocal()` and all date checks
+  run in that zone, never in the container's default UTC.
 - `POST /api/auth/login { password } -> { accessToken }` (timing-safe compare,
   no password logging).
 - Global `JwtAuthGuard` protects all `/api/*` except `auth/login` and `health`.
@@ -130,12 +133,18 @@ existing entry keeps the same uniqueness rule; a date collision returns 409 and
 leaves both records untouched. Weight mutations (`upsertWeight`, `updateWeight`,
 `deleteWeight`) are queued in the offline outbox.
 
+Server date semantics: `todayLocal()` returns `YYYY-MM-DD` in `APP_TIMEZONE`
+(`TZ` in the container), so the walk anchor and pet future-date check cannot
+drift to UTC. Walker colors are validated against `^#[0-9A-Fa-f]{6}$`; shorthand
+and named colors are rejected with 400.
+
 ## 3. Frontend (React + TypeScript + Vite PWA)
 
 ```
 frontend/
   src/
     api/client.ts      # fetch wrapper: Bearer token, 401 handling
+    api/errors.ts      # shared ApiError/QueuedError classes
     api/cache.ts       # last-good snapshots (localStorage/IndexedDB)
     api/outbox.ts      # offline mutation queue, flush on 'online'
     hooks/             # useWalkers, useWeights, usePet, useOnline
@@ -195,8 +204,20 @@ PWA (`vite-plugin-pwa`, `generateSW`, `registerType: 'autoUpdate'`):
 - Weight sheet: date picker defaulting to today + numeric input
   (`inputMode="decimal"`, mask from `lib/weightInput.ts`, dot only).
 - Pet photo: client-side downscale (~1200px) before upload, then cached by SW.
+  Offline photo selection is rejected immediately with a message; queued weight
+  and pet mutations are still supported.
+- Outbox flush: permanent 4xx failures (except 401/408/429) drop the entry and
+  continue; network/5xx/auth errors stop and keep the queue. A dropped-entry
+  count is shown in a dismissible sync bar. After the flush, and whenever the
+  browser comes back online, all data is refreshed.
+- `walkRevision` increments after a successful "today" change; the month view
+  refetches on that signal, so its day colors update without a reload.
 
 ## 4. Configuration and repo hygiene
+
+`.env` (from `.env.example`) holds `APP_PASSWORD`, `JWT_SECRET`,
+`JWT_EXPIRES_IN`, `WEB_PORT`, and `APP_TIMEZONE` (`Asia/Yekaterinburg` in
+production). Compose maps `APP_TIMEZONE` to `TZ` for the API container.
 
 In git: `docker-compose.yml`, Dockerfiles, `nginx.conf`, `.env.example`, code,
 migrations, generated PNG icons. Never in git: `.env`, `*.sqlite*`, `/data/*`,

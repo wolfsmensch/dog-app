@@ -35,6 +35,9 @@ hardcoded in docs, config, or code.
   `docker compose exec api sh -c 'touch /data/.write-test && rm /data/.write-test'`.
 - `docker compose exec api node -e 'require("better-sqlite3")'` loads the native
   module built for the current Node ABI.
+- `docker compose config --format json | jq -r '.services.api.environment.TZ'`
+  equals `APP_TIMEZONE` from `.env`; `docker compose exec api date` shows the
+  expected offset.
 - `npm audit --omit=dev` inside the built image must report
   `found 0 vulnerabilities`.
 - Existing root-owned volumes need a one-time
@@ -61,6 +64,29 @@ docker rm -f dog-api-test && docker volume rm dog-api-test-data
 ```
 
 Never print `APP_PASSWORD`, `JWT_SECRET`, or tokens to logs.
+
+## Timezone, validation, and outbox checks
+
+Use an isolated stack and a browser context with a timezone that differs from
+UTC on the test date (for example `Pacific/Honolulu`), while the API container
+uses the same `TZ`. Verify:
+
+- `GET /api/schedule/today` and the Home banner show the browser-local date;
+  `date` inside the API container matches that zone, not UTC.
+- Walker colors: `#AABBCC`/`#aabbcc` -> 201/200; `#fff`, `FFA500`, `#12345`,
+  `#1234567`, `#GGGGGG` -> 400.
+- Pet: birth date has `max` = today, a future date shows the Russian error and
+  does not save; photo selection offline shows the connection message.
+- Offline outbox: queue a conflicting weight edit (409) followed by a valid
+  entry; on `online` the bad entry is dropped, the valid one is applied, the
+  notice reports `1 (конфликт данных)`, pending count reaches 0, and the list
+  refreshes without reload.
+- Transient failure: return 500 for the first POST, verify the queue and
+  `Ожидает отправки: N` remain, then retry via that bar and verify the entry
+  syncs.
+- Offline pet rename: after `online`, header/title update without reload.
+- Month freshness: change "today" via the walkers sheet and verify the current
+  day's color changes in the month view while the sheet is still open.
 
 ## UI checks
 
